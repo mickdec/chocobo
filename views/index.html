@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="app.css">
+    <title>Alexander - Index</title>
+</head>
+
+<body>
+    <div id="cves">
+
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let cves = []
+        var socket = io();
+        socket.on("Update", (dt) => {
+            for (var elem in dt) {
+                trg = false
+                for(let x in cves){
+                    if(cves[x] == dt[elem].title){
+                        trg = true
+                    }
+                }
+                if(!trg){
+                    cves.push(dt[elem].title)
+                    document.getElementById('cves').innerHTML += `<div class='cve'>
+                <div class='cve_title'>${dt[elem].title.split("(")[0]}<a class='cve_link' target="_blank" href="${dt[elem].link}">Link</a></div>
+                <div class='cve_description'>${dt[elem].desc}</div>
+                <div class='cve_date'>${dt[elem].datetime}</div>
+                </div>`
+                }
+            }
+        });
+        setInterval(() => {
+            socket.emit('Update');
+        }, 4)
+    </script>
+</body>
+
+</html>

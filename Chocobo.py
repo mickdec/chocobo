@@ -3,13 +3,9 @@ import requests
 import re
 import json
 import time
-import socketio
-sys.path.insert(0, sys.path[0].replace("\\SRC\\Core\\Modules", "").replace("/SRC/Core/Modules",""))
+import xmltodict
 
-from SRC.Core import Globals
-from SRC.Libs import LibDebug
-
-LibDebug.CheckChocoboReq()
+patterns = ["windows","word","sentinel"]
 
 selfContent = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0",
@@ -25,7 +21,7 @@ class CVE:
         self.link = link
         self.description = description
         self.date = date
-    
+
     def toDict(self):
         content = dict()
         content['title'] = self.title
@@ -34,9 +30,29 @@ class CVE:
         content['date'] = self.date
         return content
 
-def menu():
-    print("Welcome to Chocobo")
 
+def send_API(cves):
+    err = 0
+    for cve in cves:
+        try:
+            cve_data = """{\""""+cve.title+"""\":
+            {
+                "title": \""""+cve.title+"""\",
+                "link": \""""+cve.link+"""\",
+                "desc": \""""+cve.description+"""\",
+                "datetime": \""""+cve.date+"""\"
+            }
+        }"""
+            head = {"Content-Type": "application/json"}
+            requests.post("http://127.0.0.1:80/add_exploit",
+                        headers=head, data=json.dumps(json.loads(cve_data.replace("\\","/"))))
+        except:
+            err+=1
+            print(cve_data)
+
+        print("ERR > " + str(err))
+
+def menu():
     fil = []
     i = 0
     if len(sys.argv) > 1:
@@ -44,8 +60,6 @@ def menu():
             if i > 0:
                 fil.append(a)
             i += 1
-
-    LibDebug.Log("WORK", "Starting the flux")
 
     cves = list()
     if len(fil) > 0:
@@ -59,52 +73,23 @@ def menu():
             cve["publishedDate"]))
     else:
         response = requests.get("https://nvd.nist.gov/feeds/xml/cve/misc/nvd-rss-analyzed.xml", stream=True, headers=selfContent).text
-        titles = re.findall(r'<title>.*<\/title>', response)
-        links = re.findall(r'<link>.*<\/link>', response)
-        descriptions = re.findall(r'<description>.*<\/description>', response)
-        dates = re.findall(r'<dc:date>.*<\/dc:date>', response)
-
-        counter = len(titles)
-        if counter == len(links) and counter == len(descriptions):
-            for elem in range(0, counter):
-                cves.append(CVE(titles[elem][7:-8], links[elem][6:-7], descriptions[elem][13:-14], dates[elem][9:-10]))
-
-        cveTMP=dict()
-        for cve in cves:
-            cveTMP[cve.title + "CHOCOBO" + cve.link + "CHOCOBO" + cve.description + "CHOCOBO" + cve.date] = cve.date.replace('-','').replace('T','').replace('Z','').replace(':','')
-        
-        date_list = list()
-        for v in cveTMP.values():
-            date_list.append(int(v))
-
-        date_list = list(dict.fromkeys(date_list))
-        date_list.sort(reverse = True)
-
-        for date in date_list:
-            for k,v in cveTMP.items():
-                if v == str(date):
-                    values = k.split("CHOCOBO")
-                    cves.append(CVE(values[0],values[1],values[2],values[3]))
+        o = xmltodict.parse(response)
+        o = json.loads(json.dumps(o))
+        p = 0
+        for e in o:
+            for item in o[e]:
+                p+=1
+                if p > 4:
+                    for x in o[e][item]:
+                        brut = x["title"]+x["link"]+x["description"]+x["dc:date"]
+                        for pattern in patterns:
+                            if pattern in brut:
+                                cves.append(CVE(x["title"],x["link"],x["description"],x["dc:date"]))
 
     i = 0
-    sio = socketio.Client()
-    try:
-        sio.connect('http://localhost:3000')
-        LibDebug.Log("SUCCESS", "socket.io successfuly connected.")
-        sio.sleep(1.0)
-        LibDebug.Log("SUCCESS", "Sending " + str(len(cves)) + ".")
-        for cve in cves:
-            json_content = cve.toDict()
-            if "National Vulnerability Database" not in json_content['title']:
-                sio.emit('chocobo', json.dumps(json_content))
-                LibDebug.Log("SUCCESS", "Send success for cve info.")
-                i += 1
-        sio.disconnect()
-
-        LibDebug.Log("SUCCESS", "Flux sended. " + str(i) + " cves.")
-    except:
-        LibDebug.Log("ERROR", "Can't send the flux to server.")
-        
-    exit()
+    print("Sending..")
+    send_API(cves)
+    time.sleep(30)
+    menu()
 
 menu()

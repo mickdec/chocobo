@@ -1,0 +1,64 @@
+@font-face {
+    font-family: "Poppins";
+    src: url("Poppins-Light.ttf");
+}
+
+*{
+    transition: all .3s;
+}
+
+a{
+    text-decoration: none;
+}
+
+body,html{
+    font-family: 'Poppins';
+    padding: 0;
+    margin: 0;
+    background-color: #323232;
+}
+
+#cves{
+    display: flex;
+    flex-direction: column;
+    margin: 5% 2% 0 10%;
+    flex-flow: wrap;
+}
+
+.cve{
+    border: solid 1px #F1F1F1;
+    margin: 3px;
+    border-radius: 3px;
+    padding: 5px;
+    color: #F1F1F1;
+}
+
+.cve:hover{
+    border: solid 1px #F13232;
+    cursor: pointer;
+    background-color: #151515;
+}
+
+.cve_title{
+    color: #F13232;
+}
+
+.cve_description{
+    margin: 0 10px 20px 10px;
+}
+
+.cve_link{
+    margin-left: 10px;
+    color: #F1F1F1;
+    border: solid 1px #F1F1F1;
+    background-color: #252525;
+    padding: 2px 5px 2px 5px;
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+
+.cve_link:hover{
+    color: #F1F1F1;
+    border: solid 1px #F13232;
+    background-color: #323232;
+}
