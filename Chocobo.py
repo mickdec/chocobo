@@ -44,7 +44,7 @@ def send_API(cves):
             }
         }"""
             head = {"Content-Type": "application/json"}
-            requests.post("http://127.0.0.1:80/add_exploit",
+            requests.post("https://mickdec.com/add_exploit",
                         headers=head, data=json.dumps(json.loads(cve_data.replace("\\","/"))))
         except:
             err+=1
