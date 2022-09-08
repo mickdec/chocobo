@@ -13,6 +13,12 @@ app.use(express.static(__dirname + '/views/'));
 app.use(express.urlencoded({ extended: true }))
 
 io.on('connection', (socket) => {
+    if (update) {
+        console.log(DATA)
+        io.emit("Update", DATA)
+        DATA = {}
+        update = false
+    }
     socket.on('Update', () => {
         if (update) {
             console.log(DATA)
