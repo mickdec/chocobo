@@ -5,7 +5,7 @@ import json
 import time
 import xmltodict
 
-patterns = ["windows","word","sentinel"]
+patterns = ["windows","microsoft","sentinelone","sentinel","teams","skype","outlook","word","office","o365","firefox","edge","defender","symantec","linux"]
 
 selfContent = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0",
@@ -64,7 +64,7 @@ def menu():
     cves = list()
     if len(fil) > 0:
         fil = '+'.join(fil)
-        response = json.loads(requests.get("https://services.nvd.nist.gov/rest/json/cves/1.0?keyword="+fil+"&resultsPerPage=2000&cvssV2Severity=HIGH", stream=True, headers=selfContent).text)
+        response = json.loads(requests.get("https://services.nvd.nist.gov/rest/json/cves/1.0?keyword=CVE-2022-2330&resultsPerPage=2000&cvssV2Severity=HIGH", stream=True, headers=selfContent).text)
         for cve in response["result"]["CVE_Items"]:
             cves.append(CVE(
             cve["cve"]["CVE_data_meta"]["ID"],
@@ -81,10 +81,14 @@ def menu():
                 p+=1
                 if p > 4:
                     for x in o[e][item]:
-                        brut = x["title"]+x["link"]+x["description"]+x["dc:date"]
-                        for pattern in patterns:
-                            if pattern in brut:
-                                cves.append(CVE(x["title"],x["link"],x["description"],x["dc:date"]))
+                        if "2022" in x["title"]:
+                            brut = " "+x["description"]+" "
+                            brut = brut.lower()
+                            for pattern in patterns:
+                                if " "+pattern+" " in brut:
+                                    if "2022" in x["title"]:
+                                        cves.append(CVE(x["title"],x["link"],x["description"],x["dc:date"]))
+                                        break
 
     i = 0
     print("Sending..")

@@ -28,7 +28,11 @@ app.get('/', async (req, res) => {
 })
 
 app.post('/add_exploit', (req, res) => {
-    DATA = req.body
+    
+
+    DATA = {...DATA,...req.body}
+
+    console.log(DATA)
     update = true
     res.send("OK")
 })

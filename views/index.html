@@ -24,7 +24,7 @@
                 }
                 if(!trg){
                     cves.push(dt[elem].title)
-                    document.getElementById('cves').innerHTML += `<div class='cve'>
+                    document.getElementById('cves').innerHTML += `<div id="${dt[elem].title.split("(")[0]}" class='cve' onclick='hide(${'"'+dt[elem].title.split("(")[0]+'"'})'>
                 <div class='cve_title'>${dt[elem].title.split("(")[0]}<a class='cve_link' target="_blank" href="${dt[elem].link}">Link</a></div>
                 <div class='cve_description'>${dt[elem].desc}</div>
                 <div class='cve_date'>${dt[elem].datetime}</div>
@@ -35,6 +35,9 @@
         setInterval(() => {
             socket.emit('Update');
         }, 4)
+        function hide(id){
+            document.getElementById(id).style.display = "none"
+        }
     </script>
 </body>
 
